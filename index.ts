@@ -50,6 +50,22 @@ const cosmosDbAccount = new cosmosdb.DatabaseAccount("cosmosDbAccount", {
             backupStorageRedundancy: "Geo",
         },
     },
+    analyticalStorageConfiguration: {
+        schemaType: "WellDefined",
+    },
+    defaultIdentity: "FirstPartyIdentity",
+    disableKeyBasedMetadataWriteAccess: false,
+    enableAnalyticalStorage: false,
+    enableBurstCapacity: false,
+    enableFreeTier: false,
+    enablePartitionMerge: false,
+    enablePerRegionPerPartitionAutoscale: false,
+    identity: {
+        type: "None",
+    },
+    isVirtualNetworkFilterEnabled: false,
+    minimalTlsVersion: "Tls12",
+    networkAclBypass: "None",
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/Microsoft.DocumentDB/databaseAccounts/${cosmosDbAccountName}`,
 });
@@ -92,6 +108,7 @@ const cosmosDbContainer = new cosmosdb.SqlResourceSqlContainer("cosmosDbContaine
         conflictResolutionPolicy: {
             mode: "LastWriterWins",
             conflictResolutionPath: "/_ts",
+            conflictResolutionProcedure: "",
         },
     },
 }, {
@@ -112,6 +129,7 @@ const applicationInsights = new insights.Component("applicationInsights", {
     workspaceResourceId: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/ai_podinfo-webapp-28525-insights_47a2489a-e91f-4077-8fe9-f03fe85f20cb_managed/providers/Microsoft.OperationalInsights/workspaces/managed-podinfo-webapp-28525-insights-ws",
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/microsoft.insights/components/${appName}-insights`,
+    ignoreChanges: ["flowType", "requestSource"],
 });
 
 // App Service Plan (Linux)
@@ -128,6 +146,11 @@ const appServicePlan = new web.AppServicePlan("appServicePlan", {
         size: appServicePlanSku,
         family: "Pv2",
     },
+    elasticScaleEnabled: false,
+    isSpot: false,
+    maximumElasticWorkerCount: 2,
+    targetWorkerCount: 0,
+    targetWorkerSizeId: 0,
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/serverfarms/${appName}-plan`,
 });
@@ -148,6 +171,28 @@ const webApp = new web.WebApp("webApp", {
     containerSize: 0,
     hostNamesDisabled: false,
     storageAccountRequired: false,
+    customDomainVerificationId: "A3C07EA0CA915FF776DB1D35222A030342D323D3C81A31711C8140114337F716",
+    dailyMemoryTimeQuota: 0,
+    endToEndEncryptionEnabled: false,
+    hostNameSslStates: [
+        {
+            hostType: "Standard",
+            name: "podinfo-webapp-28525.azurewebsites.net",
+            sslState: "Disabled",
+        },
+        {
+            hostType: "Repository",
+            name: "podinfo-webapp-28525.scm.azurewebsites.net",
+            sslState: "Disabled",
+        },
+    ],
+    ipMode: "IPv4",
+    keyVaultReferenceIdentity: "SystemAssigned",
+    redundancyMode: "None",
+    vnetBackupRestoreEnabled: false,
+    vnetContentShareEnabled: false,
+    vnetImagePullEnabled: false,
+    vnetRouteAllEnabled: false,
     siteConfig: {
         linuxFxVersion: `DOCKER|${containerImage}`,
         alwaysOn: true,
@@ -158,15 +203,19 @@ const webApp = new web.WebApp("webApp", {
         autoHealEnabled: true,
         autoHealRules: {
             triggers: {
+                privateBytesInKB: 0,
                 statusCodes: [{
                     status: 500,
                     subStatus: 0,
                     count: 10,
                     timeInterval: "00:05:00",
+                    path: "",
+                    win32Status: 0,
                 }],
             },
             actions: {
                 actionType: "Recycle",
+                minProcessExecutionTime: "00:00:00",
             },
         },
         numberOfWorkers: 1,
@@ -184,49 +233,50 @@ const webApp = new web.WebApp("webApp", {
         localMySqlEnabled: false,
         managedPipelineMode: "Integrated",
         loadBalancing: "LeastRequests",
-        appSettings: [
-            {
-                name: "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                value: "false",
-            },
-            {
-                name: "DOCKER_REGISTRY_SERVER_URL",
-                value: "https://index.docker.io",
-            },
-            {
-                name: "WEBSITES_PORT",
-                value: containerPort.toString(),
-            },
-            {
-                name: "APPINSIGHTS_INSTRUMENTATIONKEY",
-                value: applicationInsights.instrumentationKey,
-            },
-            {
-                name: "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                value: applicationInsights.connectionString,
-            },
-            {
-                name: "COSMOS_DB_ENDPOINT",
-                value: cosmosDbAccount.documentEndpoint,
-            },
-            {
-                name: "COSMOS_DB_KEY",
-                value: pulumi.all([cosmosDbAccount.name, resourceGroupName]).apply(([accountName, rgName]) =>
-                    cosmosdb.listDatabaseAccountKeys({
-                        accountName: accountName,
-                        resourceGroupName: rgName,
-                    }).then(keys => keys.primaryMasterKey!)
-                ),
-            },
-            {
-                name: "COSMOS_DB_DATABASE",
-                value: cosmosDbDatabaseName,
-            },
-            {
-                name: "COSMOS_DB_CONTAINER",
-                value: cosmosDbContainerName,
-            },
+        acrUseManagedIdentityCreds: false,
+        appCommandLine: "",
+        defaultDocuments: [
+            "Default.htm",
+            "Default.html",
+            "Default.asp",
+            "index.htm",
+            "index.html",
+            "iisstart.htm",
+            "default.aspx",
+            "index.php",
+            "hostingstart.html",
         ],
+        elasticWebAppScaleLimit: 0,
+        functionsRuntimeScaleMonitoringEnabled: false,
+        ipSecurityRestrictions: [{
+            action: "Allow",
+            description: "Allow all access",
+            ipAddress: "Any",
+            name: "Allow all",
+            priority: 2147483647,
+        }],
+        logsDirectorySizeLimit: 35,
+        minimumElasticInstanceCount: 0,
+        preWarmedInstanceCount: 0,
+        publishingUsername: "$podinfo-webapp-28525",
+        scmIpSecurityRestrictions: [{
+            action: "Allow",
+            description: "Allow all access",
+            ipAddress: "Any",
+            name: "Allow all",
+            priority: 2147483647,
+        }],
+        scmIpSecurityRestrictionsUseMain: false,
+        scmMinTlsVersion: "1.2",
+        virtualApplications: [{
+            physicalPath: "site\\wwwroot",
+            preloadEnabled: true,
+            virtualPath: "/",
+        }],
+        vnetName: "",
+        vnetPrivatePortsCount: 0,
+        vnetRouteAllEnabled: false,
+        webSocketsEnabled: false,
     },
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${appName}`,
