@@ -281,52 +281,34 @@ const webApp = new web.WebApp("webApp", {
         vnetPrivatePortsCount: 0,
         vnetRouteAllEnabled: false,
         webSocketsEnabled: false,
-        appSettings: [
-            {
-                name: "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                value: "false",
-            },
-            {
-                name: "DOCKER_REGISTRY_SERVER_URL",
-                value: "https://index.docker.io",
-            },
-            {
-                name: "WEBSITES_PORT",
-                value: containerPort.toString(),
-            },
-            {
-                name: "APPINSIGHTS_INSTRUMENTATIONKEY",
-                value: applicationInsights.instrumentationKey,
-            },
-            {
-                name: "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                value: applicationInsights.connectionString,
-            },
-            {
-                name: "COSMOS_DB_ENDPOINT",
-                value: cosmosDbAccount.documentEndpoint,
-            },
-            {
-                name: "COSMOS_DB_KEY",
-                value: pulumi.secret(cosmosdb.listDatabaseAccountKeysOutput({
-                    accountName: cosmosDbAccountName,
-                    resourceGroupName: resourceGroupName,
-                }).primaryMasterKey),
-            },
-            {
-                name: "COSMOS_DB_DATABASE",
-                value: cosmosDbDatabaseName,
-            },
-            {
-                name: "COSMOS_DB_CONTAINER",
-                value: cosmosDbContainerName,
-            },
-        ],
     },
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}`,
     dependsOn: [appServicePlan, applicationInsights, cosmosDbAccount],
-    ignoreChanges: ["siteConfig", "serverFarmId"],
+    ignoreChanges: ["serverFarmId"],
+});
+
+// Web App Application Settings (separate resource)
+const webAppSettings = new web.WebAppApplicationSettings("webAppSettings", {
+    name: webAppName,
+    resourceGroupName: resourceGroupName,
+    properties: {
+        WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
+        DOCKER_REGISTRY_SERVER_URL: "https://index.docker.io",
+        WEBSITES_PORT: containerPort.toString(),
+        APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsights.instrumentationKey,
+        APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.connectionString,
+        COSMOS_DB_ENDPOINT: cosmosDbAccount.documentEndpoint,
+        COSMOS_DB_KEY: pulumi.secret(cosmosdb.listDatabaseAccountKeysOutput({
+            accountName: cosmosDbAccountName,
+            resourceGroupName: resourceGroupName,
+        }).primaryMasterKey),
+        COSMOS_DB_DATABASE: cosmosDbDatabaseName,
+        COSMOS_DB_CONTAINER: cosmosDbContainerName,
+    },
+}, {
+    import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${webAppName}/config/appsettings`,
+    dependsOn: [webApp],
 });
 
 // Export Cosmos DB endpoint, Application Insights key, and Web App URL
