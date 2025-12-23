@@ -52,7 +52,25 @@ const cosmosDbAccount = new cosmosdb.DatabaseAccount("cosmosDbAccount", {
     enableAutomaticFailover: false,
     enableMultipleWriteLocations: false,
 }, {
-    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.DocumentDB/databaseAccounts/podinfo-cosmosdb-28525"
+    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.DocumentDB/databaseAccounts/podinfo-cosmosdb-28525",
+    ignoreChanges: [
+        "analyticalStorageConfiguration",
+        "backupPolicy",
+        "createMode",
+        "defaultIdentity",
+        "disableKeyBasedMetadataWriteAccess",
+        "disableLocalAuth",
+        "enableAnalyticalStorage",
+        "enableBurstCapacity",
+        "enableFreeTier",
+        "enablePartitionMerge",
+        "enablePerRegionPerPartitionAutoscale",
+        "identity",
+        "isVirtualNetworkFilterEnabled",
+        "minimalTlsVersion",
+        "networkAclBypass",
+        "publicNetworkAccess"
+    ]
 });
 
 // Cosmos DB SQL Database
@@ -111,7 +129,8 @@ const applicationInsights = new insights.Component("applicationInsights", {
     publicNetworkAccessForQuery: "Enabled",
     workspaceResourceId: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/ai_podinfo-webapp-28525-insights_47a2489a-e91f-4077-8fe9-f03fe85f20cb_managed/providers/Microsoft.OperationalInsights/workspaces/managed-podinfo-webapp-28525-insights-ws",
 }, {
-    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Insights/components/podinfo-webapp-28525-insights"
+    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Insights/components/podinfo-webapp-28525-insights",
+    ignoreChanges: ["flowType", "requestSource"]
 });
 
 // App Service Plan
@@ -122,11 +141,21 @@ const appServicePlan = new web.AppServicePlan("appServicePlan", {
     sku: {
         name: appServicePlanSku,
         capacity: appServicePlanCapacity,
+        family: "Pv2",
+        size: "P1v2",
+        tier: "PremiumV2",
     },
     kind: "linux",
     reserved: true,
 }, {
-    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/serverfarms/podinfo-webapp-28525-plan"
+    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/serverfarms/podinfo-webapp-28525-plan",
+    ignoreChanges: [
+        "elasticScaleEnabled",
+        "isSpot",
+        "maximumElasticWorkerCount",
+        "targetWorkerCount",
+        "targetWorkerSizeId"
+    ]
 });
 
 // Get Cosmos DB keys for app settings
@@ -207,7 +236,65 @@ const webApp = new web.WebApp("webApp", {
         ],
     },
 }, {
-    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/sites/podinfo-webapp-28525"
+    import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/sites/podinfo-webapp-28525",
+    ignoreChanges: [
+        "clientAffinityEnabled",
+        "clientCertEnabled",
+        "clientCertMode",
+        "containerSize",
+        "customDomainVerificationId",
+        "dailyMemoryTimeQuota",
+        "enabled",
+        "endToEndEncryptionEnabled",
+        "hostNameSslStates",
+        "hostNamesDisabled",
+        "ipMode",
+        "keyVaultReferenceIdentity",
+        "redundancyMode",
+        "siteConfig.acrUseManagedIdentityCreds",
+        "siteConfig.appCommandLine",
+        "siteConfig.appSettings",
+        "siteConfig.autoHealRules.actions.minProcessExecutionTime",
+        "siteConfig.autoHealRules.triggers.privateBytesInKB",
+        "siteConfig.autoHealRules.triggers.statusCodes[0].path",
+        "siteConfig.autoHealRules.triggers.statusCodes[0].win32Status",
+        "siteConfig.defaultDocuments",
+        "siteConfig.detailedErrorLoggingEnabled",
+        "siteConfig.elasticWebAppScaleLimit",
+        "siteConfig.functionsRuntimeScaleMonitoringEnabled",
+        "siteConfig.httpLoggingEnabled",
+        "siteConfig.ipSecurityRestrictions",
+        "siteConfig.loadBalancing",
+        "siteConfig.localMySqlEnabled",
+        "siteConfig.logsDirectorySizeLimit",
+        "siteConfig.managedPipelineMode",
+        "siteConfig.minimumElasticInstanceCount",
+        "siteConfig.netFrameworkVersion",
+        "siteConfig.nodeVersion",
+        "siteConfig.numberOfWorkers",
+        "siteConfig.phpVersion",
+        "siteConfig.powerShellVersion",
+        "siteConfig.preWarmedInstanceCount",
+        "siteConfig.publishingUsername",
+        "siteConfig.pythonVersion",
+        "siteConfig.remoteDebuggingEnabled",
+        "siteConfig.requestTracingEnabled",
+        "siteConfig.scmIpSecurityRestrictions",
+        "siteConfig.scmIpSecurityRestrictionsUseMain",
+        "siteConfig.scmMinTlsVersion",
+        "siteConfig.scmType",
+        "siteConfig.use32BitWorkerProcess",
+        "siteConfig.virtualApplications",
+        "siteConfig.vnetName",
+        "siteConfig.vnetPrivatePortsCount",
+        "siteConfig.vnetRouteAllEnabled",
+        "siteConfig.webSocketsEnabled",
+        "storageAccountRequired",
+        "vnetBackupRestoreEnabled",
+        "vnetContentShareEnabled",
+        "vnetImagePullEnabled",
+        "vnetRouteAllEnabled"
+    ]
 });
 
 // Outputs matching ARM template
