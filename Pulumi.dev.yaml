@@ -1,0 +1,4 @@
+environment:
+  - shared/azure-dev
+config:
+  arm-migration:azure-native:location: eastus
