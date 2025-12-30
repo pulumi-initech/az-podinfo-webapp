@@ -1,0 +1,21 @@
+{
+    "name": "arm-migration",
+    "type": "module",
+    "main": "index.ts",
+    "scripts": {
+        "lint": "eslint . --ext .ts",
+        "lint:fix": "eslint . --ext .ts --fix"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/node": "^18",
+        "@typescript-eslint/eslint-plugin": "^8.51.0",
+        "@typescript-eslint/parser": "^8.51.0",
+        "eslint": "^9.39.2",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/azure-native": "^3.0.0",
+        "@pulumi/pulumi": "^3.0.0"
+    }
+}
