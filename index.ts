@@ -39,25 +39,35 @@ const cosmosDbAccount = new azure_native.cosmosdb.DatabaseAccount("cosmosDbAccou
     }],
     enableAutomaticFailover: false,
     enableMultipleWriteLocations: false,
+    // Add properties that exist in Azure but were missing from ARM template
+    analyticalStorageConfiguration: {
+        schemaType: azure_native.cosmosdb.AnalyticalStorageSchemaType.WellDefined,
+    },
+    backupPolicy: {
+        type: azure_native.cosmosdb.BackupPolicyType.Periodic,
+        periodicModeProperties: {
+            backupIntervalInMinutes: 240,
+            backupRetentionIntervalInHours: 8,
+            backupStorageRedundancy: azure_native.cosmosdb.BackupStorageRedundancy.Geo,
+        },
+    },
+    defaultIdentity: "FirstPartyIdentity",
+    disableKeyBasedMetadataWriteAccess: false,
+    disableLocalAuth: false,
+    enableAnalyticalStorage: false,
+    enableBurstCapacity: false,
+    enableFreeTier: false,
+    enablePartitionMerge: false,
+    enablePerRegionPerPartitionAutoscale: false,
+    identity: {
+        type: azure_native.cosmosdb.ResourceIdentityType.None,
+    },
+    isVirtualNetworkFilterEnabled: false,
+    minimalTlsVersion: azure_native.cosmosdb.MinimalTlsVersion.Tls12,
+    networkAclBypass: azure_native.cosmosdb.NetworkAclBypass.None,
+    publicNetworkAccess: azure_native.cosmosdb.PublicNetworkAccess.Enabled,
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.DocumentDB/databaseAccounts/${cosmosDbAccountName}`,
-    ignoreChanges: [
-        "analyticalStorageConfiguration",
-        "backupPolicy",
-        "defaultIdentity",
-        "disableKeyBasedMetadataWriteAccess",
-        "disableLocalAuth",
-        "enableAnalyticalStorage",
-        "enableBurstCapacity",
-        "enableFreeTier",
-        "enablePartitionMerge",
-        "enablePerRegionPerPartitionAutoscale",
-        "identity",
-        "isVirtualNetworkFilterEnabled",
-        "minimalTlsVersion",
-        "networkAclBypass",
-        "publicNetworkAccess"
-    ],
 });
 
 // Create Cosmos DB SQL Database
@@ -94,12 +104,14 @@ new azure_native.cosmosdb.SqlResourceSqlContainer("cosmosDbContainer", {
                 path: "/\"_etag\"/?",
             }],
         },
+        conflictResolutionPolicy: {
+            mode: azure_native.cosmosdb.ConflictResolutionMode.LastWriterWins,
+            conflictResolutionPath: "/_ts",
+            conflictResolutionProcedure: "",
+        },
     },
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.DocumentDB/databaseAccounts/${cosmosDbAccountName}/sqlDatabases/${cosmosDbDatabaseName}/containers/${cosmosDbContainerName}`,
-    ignoreChanges: [
-        "resource.conflictResolutionPolicy"
-    ],
 });
 
 // Create Application Insights
@@ -115,9 +127,9 @@ const applicationInsights = new azure_native.applicationinsights.Component("appl
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Insights/components/${applicationInsightsName}`,
     ignoreChanges: [
-        "workspaceResourceId",
-        "flowType",
-        "requestSource"
+        "workspaceResourceId", // This is computed by Azure
+        "flowType", // Added by Azure, not in ARM template
+        "requestSource" // Added by Azure, not in ARM template
     ],
 });
 
@@ -157,6 +169,22 @@ const webApp = new azure_native.web.WebApp("webApp", {
     clientCertEnabled: false,
     clientCertMode: azure_native.web.ClientCertMode.Required,
     enabled: true,
+    // Add properties that exist in Azure
+    containerSize: 0,
+    dailyMemoryTimeQuota: 0,
+    endToEndEncryptionEnabled: false,
+    hostNamesDisabled: false,
+    hyperV: false,
+    ipMode: azure_native.web.IPMode.IPv4,
+    isXenon: false,
+    keyVaultReferenceIdentity: "SystemAssigned",
+    redundancyMode: azure_native.web.RedundancyMode.None,
+    scmSiteAlsoStopped: false,
+    storageAccountRequired: false,
+    vnetBackupRestoreEnabled: false,
+    vnetContentShareEnabled: false,
+    vnetImagePullEnabled: false,
+    vnetRouteAllEnabled: false,
     siteConfig: {
         linuxFxVersion: `DOCKER|${containerImage}`,
         alwaysOn: true,
@@ -206,46 +234,52 @@ const webApp = new azure_native.web.WebApp("webApp", {
             "index.php",
             "hostingstart.html"
         ],
+        // Add missing siteConfig properties that exist in Azure
+        acrUseManagedIdentityCreds: false,
+        appCommandLine: "",
+        elasticWebAppScaleLimit: 0,
+        functionsRuntimeScaleMonitoringEnabled: false,
+        logsDirectorySizeLimit: 35,
+        minimumElasticInstanceCount: 0,
+        nodeVersion: "",
+        phpVersion: "",
+        powerShellVersion: "",
+        preWarmedInstanceCount: 0,
+        pythonVersion: "",
+        scmIpSecurityRestrictionsUseMain: false,
+        scmMinTlsVersion: "1.2",
+        vnetName: "",
+        vnetPrivatePortsCount: 0,
+        vnetRouteAllEnabled: false,
+        ipSecurityRestrictions: [{
+            action: "Allow",
+            description: "Allow all access",
+            ipAddress: "Any",
+            name: "Allow all",
+            priority: 2147483647,
+        }],
+        scmIpSecurityRestrictions: [{
+            action: "Allow",
+            description: "Allow all access", 
+            ipAddress: "Any",
+            name: "Allow all",
+            priority: 2147483647,
+        }],
+        virtualApplications: [{
+            physicalPath: "site\\wwwroot",
+            preloadEnabled: true,
+            virtualPath: "/",
+        }],
     },
 }, {
     import: `/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/sites/${appName}`,
     ignoreChanges: [
+        // Only ignore truly computed properties set by Azure
         "hostNames",
         "repositorySiteName", 
         "state",
         "customDomainVerificationId",
-        "hostNameSslStates",
-        "containerSize",
-        "dailyMemoryTimeQuota",
-        "endToEndEncryptionEnabled",
-        "hostNamesDisabled",
-        "ipMode",
-        "keyVaultReferenceIdentity",
-        "redundancyMode",
-        "storageAccountRequired",
-        "vnetBackupRestoreEnabled",
-        "vnetContentShareEnabled",
-        "vnetImagePullEnabled",
-        "vnetRouteAllEnabled",
-        "siteConfig.acrUseManagedIdentityCreds",
-        "siteConfig.appCommandLine",
-        "siteConfig.elasticWebAppScaleLimit",
-        "siteConfig.functionsRuntimeScaleMonitoringEnabled",
-        "siteConfig.ipSecurityRestrictions",
-        "siteConfig.logsDirectorySizeLimit",
-        "siteConfig.minimumElasticInstanceCount",
-        "siteConfig.nodeVersion",
-        "siteConfig.phpVersion",
-        "siteConfig.powerShellVersion",
-        "siteConfig.preWarmedInstanceCount",
-        "siteConfig.pythonVersion",
-        "siteConfig.scmIpSecurityRestrictions",
-        "siteConfig.scmIpSecurityRestrictionsUseMain",
-        "siteConfig.scmMinTlsVersion",
-        "siteConfig.virtualApplications",
-        "siteConfig.vnetName",
-        "siteConfig.vnetPrivatePortsCount",
-        "siteConfig.vnetRouteAllEnabled"
+        "hostNameSslStates"
     ],
 });
 
