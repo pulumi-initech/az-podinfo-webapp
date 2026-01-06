@@ -1,0 +1,13 @@
+environment:
+  - shared/azure-oidc-dev
+config:
+  arm-migration:appName: podinfo-webapp-28525
+  arm-migration:resourceGroupName: podinfo-webapp-rg
+  arm-migration:location: eastus
+  arm-migration:cosmosDbAccountName: podinfo-cosmosdb-28525
+  arm-migration:appServicePlanSku: P1V2
+  arm-migration:appServicePlanCapacity: "2"
+  arm-migration:cosmosDbDatabaseName: appdb
+  arm-migration:cosmosDbContainerName: items
+  arm-migration:containerImage: stefanprodan/podinfo:latest
+  arm-migration:containerPort: "9898"
