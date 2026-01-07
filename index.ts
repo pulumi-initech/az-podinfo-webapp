@@ -40,25 +40,35 @@ const cosmosDbAccount = new azure_native.cosmosdb.DatabaseAccount("cosmosDbAccou
     }],
     enableAutomaticFailover: false,
     enableMultipleWriteLocations: false,
+    // Add properties that exist in Azure to match actual state
+    analyticalStorageConfiguration: {
+        schemaType: azure_native.cosmosdb.AnalyticalStorageSchemaType.WellDefined,
+    },
+    backupPolicy: {
+        type: azure_native.cosmosdb.BackupPolicyType.Periodic,
+        periodicModeProperties: {
+            backupIntervalInMinutes: 240,
+            backupRetentionIntervalInHours: 8,
+            backupStorageRedundancy: azure_native.cosmosdb.BackupStorageRedundancy.Geo,
+        },
+    },
+    defaultIdentity: "FirstPartyIdentity",
+    disableKeyBasedMetadataWriteAccess: false,
+    disableLocalAuth: false,
+    enableAnalyticalStorage: false,
+    enableBurstCapacity: false,
+    enableFreeTier: false,
+    enablePartitionMerge: false,
+    enablePerRegionPerPartitionAutoscale: false,
+    identity: {
+        type: azure_native.cosmosdb.ResourceIdentityType.None,
+    },
+    isVirtualNetworkFilterEnabled: false,
+    minimalTlsVersion: azure_native.cosmosdb.MinimalTlsVersion.Tls12,
+    networkAclBypass: azure_native.cosmosdb.NetworkAclBypass.None,
+    publicNetworkAccess: azure_native.cosmosdb.PublicNetworkAccess.Enabled,
 }, {
     import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.DocumentDB/databaseAccounts/podinfo-cosmosdb-28525",
-    ignoreChanges: [
-        "analyticalStorageConfiguration",
-        "backupPolicy", 
-        "defaultIdentity",
-        "disableKeyBasedMetadataWriteAccess",
-        "disableLocalAuth",
-        "enableAnalyticalStorage",
-        "enableBurstCapacity",
-        "enableFreeTier",
-        "enablePartitionMerge",
-        "enablePerRegionPerPartitionAutoscale",
-        "identity",
-        "isVirtualNetworkFilterEnabled",
-        "minimalTlsVersion",
-        "networkAclBypass",
-        "publicNetworkAccess"
-    ],
 });
 
 // Cosmos DB SQL Database
@@ -113,7 +123,8 @@ const applicationInsights = new azure_native.applicationinsights.Component("appl
     publicNetworkAccessForQuery: azure_native.applicationinsights.PublicNetworkAccessType.Enabled,
 }, {
     import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Insights/components/podinfo-webapp-28525-insights",
-    ignoreChanges: ["flowType", "requestSource", "workspaceResourceId"],
+    // These properties are computed by Azure, so we ignore them
+    ignoreChanges: ["workspaceResourceId", "flowType", "requestSource"],
 });
 
 // App Service Plan
@@ -127,18 +138,16 @@ const appServicePlan = new azure_native.web.AppServicePlan("appServicePlan", {
     },
     kind: "linux",
     reserved: true,
+    // Add properties that exist in Azure (shown as removed in diff)
+    elasticScaleEnabled: false,
+    isSpot: false,
+    maximumElasticWorkerCount: 2,
+    targetWorkerCount: 0,
+    targetWorkerSizeId: 0,
 }, {
     import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/serverFarms/podinfo-webapp-28525-plan",
-    ignoreChanges: [
-        "elasticScaleEnabled",
-        "isSpot", 
-        "maximumElasticWorkerCount",
-        "targetWorkerCount",
-        "targetWorkerSizeId",
-        "sku.family",
-        "sku.size", 
-        "sku.tier"
-    ],
+    // Ignore computed properties that Azure sets automatically
+    ignoreChanges: ["sku.family", "sku.size", "sku.tier"],
 });
 
 // Web App
@@ -151,6 +160,20 @@ const webApp = new azure_native.web.WebApp("webApp", {
     httpsOnly: true,
     reserved: true,
     clientAffinityEnabled: true,
+    // Add properties that exist in Azure to match actual state
+    clientCertEnabled: false,
+    clientCertMode: azure_native.web.ClientCertMode.Required,
+    containerSize: 0,
+    dailyMemoryTimeQuota: 0,
+    enabled: true,
+    endToEndEncryptionEnabled: false,
+    hostNamesDisabled: false,
+    storageAccountRequired: false,
+    // Add VNet properties that exist in Azure (shown as removed in diff)
+    vnetBackupRestoreEnabled: false,
+    vnetContentShareEnabled: false,
+    vnetImagePullEnabled: false,
+    vnetRouteAllEnabled: false,
     siteConfig: {
         linuxFxVersion: `DOCKER|${containerImage}`,
         alwaysOn: true,
@@ -177,60 +200,51 @@ const webApp = new azure_native.web.WebApp("webApp", {
             },
         },
         netFrameworkVersion: "v4.0",
+        // Add properties that exist in Azure to match actual state
+        acrUseManagedIdentityCreds: false,
+        appCommandLine: "",
+        detailedErrorLoggingEnabled: false,
+        elasticWebAppScaleLimit: 0,
+        functionsRuntimeScaleMonitoringEnabled: false,
+        httpLoggingEnabled: false,
+        loadBalancing: azure_native.web.SiteLoadBalancing.LeastRequests,
+        localMySqlEnabled: false,
+        logsDirectorySizeLimit: 35,
+        managedPipelineMode: azure_native.web.ManagedPipelineMode.Integrated,
+        minimumElasticInstanceCount: 0,
+        nodeVersion: "",
+        numberOfWorkers: 1,
+        phpVersion: "",
+        powerShellVersion: "",
+        preWarmedInstanceCount: 0,
+        pythonVersion: "",
+        remoteDebuggingEnabled: false,
+        requestTracingEnabled: false,
+        scmIpSecurityRestrictionsUseMain: false,
+        scmMinTlsVersion: "1.2",
+        scmType: azure_native.web.ScmType.None,
+        use32BitWorkerProcess: true,
+        vnetName: "",
+        vnetPrivatePortsCount: 0,
+        vnetRouteAllEnabled: false,
+        webSocketsEnabled: false,
     },
 }, {
     import: "/subscriptions/32b9cb2e-69be-4040-80a6-02cd6b2cc5ec/resourceGroups/podinfo-webapp-rg/providers/Microsoft.Web/sites/podinfo-webapp-28525",
+    // Only ignore truly computed properties that Azure generates automatically
     ignoreChanges: [
-        "clientCertEnabled",
-        "clientCertMode", 
-        "containerSize",
-        "customDomainVerificationId",
-        "dailyMemoryTimeQuota",
-        "enabled",
-        "endToEndEncryptionEnabled",
-        "hostNameSslStates",
-        "hostNamesDisabled",
-        "ipMode",
-        "keyVaultReferenceIdentity",
-        "redundancyMode",
-        "storageAccountRequired",
-        "vnetBackupRestoreEnabled",
-        "vnetContentShareEnabled",
-        "vnetImagePullEnabled",
-        "vnetRouteAllEnabled",
-        // Computed siteConfig properties that Azure sets automatically
-        "siteConfig.acrUseManagedIdentityCreds",
-        "siteConfig.appCommandLine",
-        "siteConfig.defaultDocuments",
-        "siteConfig.detailedErrorLoggingEnabled",
-        "siteConfig.elasticWebAppScaleLimit",
-        "siteConfig.functionsRuntimeScaleMonitoringEnabled",
-        "siteConfig.httpLoggingEnabled",
-        "siteConfig.ipSecurityRestrictions",
-        "siteConfig.loadBalancing",
-        "siteConfig.localMySqlEnabled",
-        "siteConfig.logsDirectorySizeLimit",
-        "siteConfig.managedPipelineMode",
-        "siteConfig.minimumElasticInstanceCount",
-        "siteConfig.nodeVersion",
-        "siteConfig.numberOfWorkers",
-        "siteConfig.phpVersion",
-        "siteConfig.powerShellVersion",
-        "siteConfig.preWarmedInstanceCount",
-        "siteConfig.publishingUsername",
-        "siteConfig.pythonVersion",
-        "siteConfig.remoteDebuggingEnabled",
-        "siteConfig.requestTracingEnabled",
-        "siteConfig.scmIpSecurityRestrictions",
-        "siteConfig.scmIpSecurityRestrictionsUseMain",
-        "siteConfig.scmMinTlsVersion",
-        "siteConfig.scmType",
-        "siteConfig.use32BitWorkerProcess",
-        "siteConfig.virtualApplications",
-        "siteConfig.vnetName",
-        "siteConfig.vnetPrivatePortsCount",
-        "siteConfig.vnetRouteAllEnabled",
-        "siteConfig.webSocketsEnabled"
+        "customDomainVerificationId", // Generated by Azure
+        "hostNameSslStates", // Managed by Azure
+        "ipMode", // Computed by Azure
+        "keyVaultReferenceIdentity", // Computed by Azure
+        "redundancyMode", // Computed by Azure
+
+        // Only ignore siteConfig properties that are truly computed/managed by Azure
+        "siteConfig.defaultDocuments", // Azure default list
+        "siteConfig.ipSecurityRestrictions", // Default security rules
+        "siteConfig.publishingUsername", // Generated by Azure
+        "siteConfig.scmIpSecurityRestrictions", // Default SCM security rules
+        "siteConfig.virtualApplications", // Default virtual app config
     ],
 });
 
