@@ -1,0 +1,10 @@
+name: arm-migration
+description: Pulumi TypeScript project migrated from ARM template for podinfo web application
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: azure-typescript
