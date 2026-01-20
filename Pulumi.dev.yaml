@@ -1,0 +1,8 @@
+config:
+  arm-migration:appName: podinfo-webapp-28525
+  arm-migration:location: eastus
+  arm-migration:resourceGroupName: podinfo-webapp-rg
+  arm-migration:cosmosDbAccountName: podinfo-cosmosdb-28525
+  arm-migration:subscriptionId: 32b9cb2e-69be-4040-80a6-02cd6b2cc5ec
+environment:
+  - shared/azure-dev
