@@ -1,0 +1,12 @@
+config:
+  az-podinfo-webapp:appName: podinfo-webapp-28525
+  az-podinfo-webapp:cosmosDbAccountName: podinfo-cosmosdb-28525
+  az-podinfo-webapp:location: eastus
+  az-podinfo-webapp:appServicePlanSku: P1V2
+  az-podinfo-webapp:appServicePlanCapacity: "2"
+  az-podinfo-webapp:cosmosDbDatabaseName: appdb
+  az-podinfo-webapp:cosmosDbContainerName: items
+  az-podinfo-webapp:containerImage: stefanprodan/podinfo:latest
+  az-podinfo-webapp:containerPort: "9898"
+  az-podinfo-webapp:resourceGroupName: REPLACE_WITH_YOUR_RESOURCE_GROUP
+  az-podinfo-webapp:subscriptionId: REPLACE_WITH_YOUR_SUBSCRIPTION_ID

@@ -1,0 +1,15 @@
+{
+    "name": "az-podinfo-webapp",
+    "main": "index.ts",
+    "scripts": {
+        "build": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/node": "^18",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/azure-native": "^3.0.0",
+        "@pulumi/pulumi": "^3.0.0"
+    }
+}
