@@ -173,6 +173,9 @@ return await Pulumi.Deployment.RunAsync(() =>
         ServerFarmId = appServicePlan.Id,
         HttpsOnly = true,
         Reserved = true, // Required for Linux container apps
+        ClientAffinityEnabled = true,
+        ClientCertEnabled = false,
+        Enabled = true,
         SiteConfig = new SiteConfigArgs
         {
             LinuxFxVersion = $"DOCKER|{containerImage}",
@@ -201,60 +204,36 @@ return await Pulumi.Deployment.RunAsync(() =>
                 {
                     ActionType = AutoHealActionType.Recycle
                 }
-            },
-            AppSettings = new[]
-            {
-                new NameValuePairArgs
-                {
-                    Name = "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                    Value = "false"
-                },
-                new NameValuePairArgs
-                {
-                    Name = "DOCKER_REGISTRY_SERVER_URL",
-                    Value = "https://index.docker.io"
-                },
-                new NameValuePairArgs
-                {
-                    Name = "WEBSITES_PORT",
-                    Value = containerPort.ToString()
-                },
-                new NameValuePairArgs
-                {
-                    Name = "APPINSIGHTS_INSTRUMENTATIONKEY",
-                    Value = applicationInsights.InstrumentationKey
-                },
-                new NameValuePairArgs
-                {
-                    Name = "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                    Value = applicationInsights.ConnectionString
-                },
-                new NameValuePairArgs
-                {
-                    Name = "COSMOS_DB_ENDPOINT",
-                    Value = cosmosDbAccount.DocumentEndpoint
-                },
-                new NameValuePairArgs
-                {
-                    Name = "COSMOS_DB_KEY",
-                    Value = cosmosDbKeys.Apply(keys => keys.PrimaryMasterKey ?? "")
-                },
-                new NameValuePairArgs
-                {
-                    Name = "COSMOS_DB_DATABASE",
-                    Value = cosmosDbDatabaseName
-                },
-                new NameValuePairArgs
-                {
-                    Name = "COSMOS_DB_CONTAINER",
-                    Value = cosmosDbContainerName
-                }
             }
         }
     }, new CustomResourceOptions
     {
         ImportId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{webAppName}",
-        DependsOn = { appServicePlan, applicationInsights, cosmosDbAccount }
+        DependsOn = { appServicePlan, applicationInsights, cosmosDbAccount },
+        IgnoreChanges = { "siteConfig.appSettings" } // App settings managed separately
+    });
+    
+    // Web App Application Settings (managed separately from WebApp)
+    var webAppSettings = new WebAppApplicationSettings("webAppSettings", new WebAppApplicationSettingsArgs
+    {
+        Name = webApp.Name,
+        ResourceGroupName = resourceGroupName,
+        Properties = 
+        {
+            { "WEBSITES_ENABLE_APP_SERVICE_STORAGE", "false" },
+            { "DOCKER_REGISTRY_SERVER_URL", "https://index.docker.io" },
+            { "WEBSITES_PORT", containerPort.ToString() },
+            { "APPINSIGHTS_INSTRUMENTATIONKEY", applicationInsights.InstrumentationKey },
+            { "APPLICATIONINSIGHTS_CONNECTION_STRING", applicationInsights.ConnectionString },
+            { "COSMOS_DB_ENDPOINT", cosmosDbAccount.DocumentEndpoint },
+            { "COSMOS_DB_KEY", cosmosDbKeys.Apply(keys => keys.PrimaryMasterKey ?? "") },
+            { "COSMOS_DB_DATABASE", cosmosDbDatabaseName },
+            { "COSMOS_DB_CONTAINER", cosmosDbContainerName }
+        }
+    }, new CustomResourceOptions
+    {
+        ImportId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{webAppName}/config/appsettings",
+        DependsOn = { webApp }
     });
     
     // Export outputs
