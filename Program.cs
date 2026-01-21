@@ -37,10 +37,10 @@ return await Pulumi.Deployment.RunAsync(() =>
         ResourceGroupName = resourceGroupName,
         Location = location,
         Kind = "GlobalDocumentDB",
-        DatabaseAccountOfferType = "Standard",
+        DatabaseAccountOfferType = DatabaseAccountOfferType.Standard,
         ConsistencyPolicy = new ConsistencyPolicyArgs
         {
-            DefaultConsistencyLevel = "Session"
+            DefaultConsistencyLevel = DefaultConsistencyLevel.Session
         },
         Locations = new[]
         {
@@ -53,7 +53,7 @@ return await Pulumi.Deployment.RunAsync(() =>
         },
         Capabilities = new[]
         {
-            new CapabilityArgs
+            new Pulumi.AzureNative.CosmosDB.Inputs.CapabilityArgs
             {
                 Name = "EnableServerless"
             }
@@ -236,7 +236,7 @@ return await Pulumi.Deployment.RunAsync(() =>
     });
     
     // Web App Configuration (auto-heal rules)
-    var webAppConfig = new WebAppSiteConfigWeb("webAppConfig", new WebAppSiteConfigWebArgs
+    var webAppConfig = new WebAppConfig("webAppConfig", new WebAppConfigArgs
     {
         Name = webApp.Name,
         ResourceGroupName = resourceGroupName,
@@ -259,7 +259,7 @@ return await Pulumi.Deployment.RunAsync(() =>
             },
             Actions = new AutoHealActionsArgs
             {
-                ActionType = "Recycle"
+                ActionType = AutoHealActionType.Recycle
             }
         }
     }, new CustomResourceOptions
