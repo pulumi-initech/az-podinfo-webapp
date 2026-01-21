@@ -172,6 +172,7 @@ return await Pulumi.Deployment.RunAsync(() =>
         Kind = "app,linux,container",
         ServerFarmId = appServicePlan.Id,
         HttpsOnly = true,
+        Reserved = true, // Required for Linux container apps
         SiteConfig = new SiteConfigArgs
         {
             LinuxFxVersion = $"DOCKER|{containerImage}",
