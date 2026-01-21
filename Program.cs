@@ -180,6 +180,27 @@ return await Pulumi.Deployment.RunAsync(() =>
             MinTlsVersion = "1.2",
             FtpsState = "Disabled",
             HealthCheckPath = "/healthz",
+            AutoHealEnabled = true,
+            AutoHealRules = new AutoHealRulesArgs
+            {
+                Triggers = new AutoHealTriggersArgs
+                {
+                    StatusCodes = new[]
+                    {
+                        new StatusCodesBasedTriggerArgs
+                        {
+                            Status = 500,
+                            SubStatus = 0,
+                            Count = 10,
+                            TimeInterval = "00:05:00"
+                        }
+                    }
+                },
+                Actions = new AutoHealActionsArgs
+                {
+                    ActionType = AutoHealActionType.Recycle
+                }
+            },
             AppSettings = new[]
             {
                 new NameValuePairArgs
@@ -233,39 +254,6 @@ return await Pulumi.Deployment.RunAsync(() =>
     {
         ImportId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{webAppName}",
         DependsOn = { appServicePlan, applicationInsights, cosmosDbAccount }
-    });
-    
-    // Web App Configuration (auto-heal rules)
-    var webAppConfig = new WebAppConfig("webAppConfig", new WebAppConfigArgs
-    {
-        Name = webApp.Name,
-        ResourceGroupName = resourceGroupName,
-        HealthCheckPath = "/healthz",
-        AutoHealEnabled = true,
-        AutoHealRules = new AutoHealRulesArgs
-        {
-            Triggers = new AutoHealTriggersArgs
-            {
-                StatusCodes = new[]
-                {
-                    new StatusCodesBasedTriggerArgs
-                    {
-                        Status = 500,
-                        SubStatus = 0,
-                        Count = 10,
-                        TimeInterval = "00:05:00"
-                    }
-                }
-            },
-            Actions = new AutoHealActionsArgs
-            {
-                ActionType = AutoHealActionType.Recycle
-            }
-        }
-    }, new CustomResourceOptions
-    {
-        ImportId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{webAppName}/config/web",
-        DependsOn = { webApp }
     });
     
     // Export outputs
